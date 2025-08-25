@@ -15,17 +15,21 @@ import { MdBlock, MdClose } from 'react-icons/md'
 import { CgProfile, CgUnblock } from 'react-icons/cg'
 import { DownOutlined } from '@ant-design/icons'
 import {
+  useDeleteGuestMutation,
   useGetAllGuestsQuery,
   useGetSingleGuestsQuery,
   useUpdateStatusMutation,
 } from '../../../Redux/guestApis'
 import { useGetAllHotelsQuery } from '../../../Redux/hotelApis'
+import { RiDeleteBin6Line } from 'react-icons/ri'
 
 const GuestManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [userDetails, setUserDetails] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const [isConfirmModalOpenDelete, setisConfirmModalOpenDelete] =
+    useState(false)
   const [actionType, setActionType] = useState('')
   const [owners, setOwners] = useState([])
 
@@ -37,6 +41,8 @@ const GuestManagement = () => {
   const [selectedHotelID, setSelectedHotelID] = useState('')
   const [selectedHotelName, setSelectedHotelName] = useState('Select By Hotel')
   const [selectedStatus, setSelectedStatus] = useState('Select By Status')
+
+  const [deleteGuest] = useDeleteGuestMutation()
 
   const [updateStatus] = useUpdateStatusMutation()
 
@@ -142,6 +148,10 @@ const GuestManagement = () => {
     setActionType(type)
     setIsConfirmModalOpen(true)
   }
+  const handleActionDelete = async (record) => {
+    setUserDetails(record)
+    setisConfirmModalOpenDelete(true)
+  }
 
   const handleConfirmAction = async () => {
     try {
@@ -166,6 +176,18 @@ const GuestManagement = () => {
       )
 
       setIsConfirmModalOpen(false)
+    } catch (error) {
+      message.error(`Failed to ${actionType} user. Please try again.`)
+      console.error('Error updating user status:', error)
+    }
+  }
+  const handleConfirmActionDelete = async () => {
+    console.log(userDetails)
+    try {
+      await deleteGuest({
+        userId: userDetails.key,
+      }).unwrap()
+      setisConfirmModalOpenDelete(false)
     } catch (error) {
       message.error(`Failed to ${actionType} user. Please try again.`)
       console.error('Error updating user status:', error)
@@ -284,6 +306,14 @@ const GuestManagement = () => {
               onClick={() =>
                 handleAction(record, record.isBlocked ? 'unblock' : 'block')
               }
+            />
+          </Tooltip>
+
+          <Tooltip title="View">
+            <Button
+              type="text"
+              icon={<RiDeleteBin6Line size={20} className="!text-[#cd1111]" />}
+              onClick={() => handleActionDelete(record)}
             />
           </Tooltip>
         </div>
@@ -558,6 +588,21 @@ const GuestManagement = () => {
       >
         <p>
           Are you sure you want to {actionType}{' '}
+          <span className="font-bold">{userDetails?.name}</span>?
+        </p>
+      </Modal>
+
+      <Modal
+        title={`Confirm ${
+          actionType.charAt(0).toUpperCase() + actionType.slice(1)
+        }`}
+        open={isConfirmModalOpenDelete}
+        onOk={handleConfirmActionDelete}
+        onCancel={() => setisConfirmModalOpenDelete(false)}
+        centered
+      >
+        <p>
+          Are you sure you want to delete this guest :
           <span className="font-bold">{userDetails?.name}</span>?
         </p>
       </Modal>

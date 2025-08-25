@@ -30,6 +30,16 @@ const guestApis = baseApis.injectEndpoints({
       },
       invalidatesTags: ['guest'],
     }),
+    deleteGuest: builder.mutation({
+      query: (params) => {
+        const { userId } = params
+        return {
+          url: `/normal-user/delete-guest/${userId}`,
+          method: 'DELETE',
+        }
+      },
+      invalidatesTags: ['guest'],
+    }),
   }),
   overrideExisting: false,
 })
@@ -38,6 +48,7 @@ export const {
   useGetAllGuestsQuery,
   useGetSingleGuestsQuery,
   useUpdateStatusMutation,
+  useDeleteGuestMutation,
 } = guestApis
 
 export default guestApis
